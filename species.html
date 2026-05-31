@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TurtleWorld — Species</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background-color: #1a0f00;
+      color: #f0e6d0;
+      overflow-x: hidden;
+    }
+ 
+    /* JUNGLE TEXTURE BG */
+    .jungle-bg {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 90% 10%, rgba(85,139,47,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 5% 80%, rgba(180,83,9,0.2) 0%, transparent 45%),
+        linear-gradient(160deg, #1a0f00 0%, #2d1a00 35%, #1a2900 70%, #0f1a08 100%);
+      position: relative;
+    }
+ 
+    /* LEAF PARTICLES */
+    .leaves { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+    .leaf {
+      position: absolute;
+      font-size: 1.2rem;
+      animation: fallLeaf linear infinite;
+      opacity: 0;
+    }
+    .leaf:nth-child(1) { left: 5%;  animation-duration: 10s; animation-delay: 0s; }
+    .leaf:nth-child(2) { left: 20%; animation-duration: 13s; animation-delay: 3s; }
+    .leaf:nth-child(3) { left: 45%; animation-duration: 11s; animation-delay: 6s; }
+    .leaf:nth-child(4) { left: 65%; animation-duration: 15s; animation-delay: 1s; }
+    .leaf:nth-child(5) { left: 82%; animation-duration: 12s; animation-delay: 8s; }
+    @keyframes fallLeaf {
+      0% { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.5; }
+      90% { opacity: 0.2; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+ 
+    /* NAVBAR */
+    .navbar-custom {
+      background: rgba(15, 8, 0, 0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(180,120,30,0.25);
+      padding: 1rem 0;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .navbar-brand-text {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #c8a84b !important;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .nav-link-custom {
+      color: rgba(240,230,208,0.65) !important;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+      padding: 0.4rem 1.2rem !important;
+    }
+    .nav-link-custom:hover, .nav-link-custom.active { color: #c8a84b !important; }
+    .nav-link-custom.active { border-bottom: 2px solid #c8a84b; }
+ 
+    /* PAGE HEADER */
+    .page-header {
+      position: relative; z-index: 1;
+      padding: 6rem 0 4rem;
+      text-align: center;
+    }
+    .header-label {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(200,168,75,0.7);
+      margin-bottom: 1.2rem;
+    }
+    .page-title {
+      font-family: 'Lora', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 600;
+      color: #f0e6d0;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+    .page-title em { color: #7db356; font-style: italic; }
+    .page-sub {
+      font-size: 1.15rem;
+      color: rgba(240,230,208,0.55);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+ 
+    /* FILTER BAR */
+    .filter-bar {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 0 0 3rem;
+    }
+    .filter-btn {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid rgba(200,168,75,0.3);
+      background: transparent;
+      color: rgba(240,230,208,0.6);
+      padding: 0.5rem 1.4rem;
+      margin: 0.25rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: #c8a84b;
+      border-color: #c8a84b;
+      color: #1a0f00;
+    }
+ 
+    /* SPECIES CARDS */
+    .species-grid { position: relative; z-index: 1; padding-bottom: 6rem; }
+    .species-card {
+      background: rgba(30,20,5,0.6);
+      border: 1px solid rgba(200,168,75,0.15);
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      height: 100%;
+      cursor: default;
+    }
+    .species-card:hover {
+      border-color: rgba(200,168,75,0.5);
+      transform: translateY(-5px);
+    }
+    .card-header-img {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-emoji {
+      font-size: 5rem;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+      animation: gentleRock 5s ease-in-out infinite;
+      z-index: 1;
+    }
+    @keyframes gentleRock {
+      0%, 100% { transform: rotate(-5deg) scale(1); }
+      50% { transform: rotate(5deg) scale(1.05); }
+    }
+    .card-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.12;
+      background-size: 30px 30px;
+    }
+    .card-body-custom { padding: 1.5rem; }
+    .species-name {
+      font-family: 'Lora', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #f0e6d0;
+      margin-bottom: 0.2rem;
+    }
+    .species-latin {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: rgba(200,168,75,0.7);
+      margin-bottom: 1rem;
+    }
+    .species-desc {
+      font-size: 0.95rem;
+      color: rgba(240,230,208,0.6);
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+    .stat-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border: 1px solid rgba(200,168,75,0.25);
+      color: rgba(200,168,75,0.8);
+    }
+    .status-chip {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+    }
+    .status-cr { background: rgba(180,30,30,0.3); border: 1px solid rgba(220,50,50,0.4); color: #f87171; }
+    .status-en { background: rgba(180,80,20,0.3); border: 1px solid rgba(220,120,30,0.4); color: #fb923c; }
+    .status-vu { background: rgba(150,130,20,0.3); border: 1px solid rgba(200,180,30,0.4); color: #fbbf24; }
+    .status-lc { background: rgba(30,100,30,0.3); border: 1px solid rgba(60,160,60,0.4); color: #86efac; }
+ 
+    /* COLOR THEMES PER CARD */
+    .theme-leatherback .card-header-img { background: linear-gradient(135deg, #0d1b3e 0%, #1a2a5a 100%); }
+    .theme-green      .card-header-img { background: linear-gradient(135deg, #0d3320 0%, #1a5c38 100%); }
+    .theme-hawksbill  .card-header-img { background: linear-gradient(135deg, #3b1c00 0%, #7a3800 100%); }
+    .theme-loggerhead .card-header-img { background: linear-gradient(135deg, #2d1a00 0%, #6b4000 100%); }
+    .theme-ridley     .card-header-img { background: linear-gradient(135deg, #1c1c00 0%, #4a4a00 100%); }
+    .theme-flatback   .card-header-img { background: linear-gradient(135deg, #001c2d 0%, #003c5a 100%); }
+    .theme-black      .card-header-img { background: linear-gradient(135deg, #0f0f0f 0%, #2a2a2a 100%); }
+ 
+    /* COMPARISON TABLE */
+    .compare-section { position: relative; z-index: 1; padding: 4rem 0 6rem; }
+    .compare-section h2 {
+      font-family: 'Lora', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #c8a84b;
+      margin-bottom: 0.4rem;
+    }
+    .compare-section p { color: rgba(240,230,208,0.5); margin-bottom: 2rem; }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    .compare-table th {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(200,168,75,0.7);
+      border-bottom: 1px solid rgba(200,168,75,0.25);
+      padding: 0.8rem 1rem;
+      text-align: left;
+    }
+    .compare-table td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(200,168,75,0.08);
+      color: rgba(240,230,208,0.75);
+      vertical-align: middle;
+    }
+    .compare-table tr:hover td { background: rgba(200,168,75,0.05); }
+ 
+    footer {
+      background: rgba(5,3,0,0.95);
+      border-top: 1px solid rgba(200,168,75,0.15);
+      padding: 2.5rem 0;
+      text-align: center;
+      color: rgba(240,230,208,0.3);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+    }
+    footer a { color: rgba(200,168,75,0.5); text-decoration: none; }
+    footer a:hover { color: #c8a84b; }
+  </style>
+</head>
+<body>
+  <div class="leaves">
+    <div class="leaf">🍃</div><div class="leaf">🌿</div><div class="leaf">🍀</div>
+    <div class="leaf">🌱</div><div class="leaf">🍃</div>
+  </div>
+ 
+  <nav class="navbar-custom">
+    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <a class="navbar-brand-text" href="index.html">🐢 TurtleWorld</a>
+      <div class="d-flex gap-1 flex-wrap">
+        <a class="nav-link-custom" href="index.html">Home</a>
+        <a class="nav-link-custom active" href="species.html">Species</a>
+        <a class="nav-link-custom" href="conservation.html">Conservation</a>
+      </div>
+    </div>
+  </nav>
+ 
+  <div class="jungle-bg">
+    <section class="page-header">
+      <div class="container">
+        <p class="header-label">Field Guide · Seven Species</p>
+        <h1 class="page-title">The Sea Turtle<br><em>Species Compendium</em></h1>
+        <p class="page-sub">Seven magnificent species, each uniquely adapted to their ocean habitat — and each critically in need of our protection.</p>
+      </div>
+    </section>
+ 
+    <!-- SPECIES CARDS GRID -->
+    <section class="species-grid">
+      <div class="container">
+        <div class="row g-4">
+ 
+          <!-- LEATHERBACK -->
+          <div class="col-md-6 col-lg-4 d-flex">
+            <div class="species-card theme-leatherback">
+              <div class="card-header-img">
+                <div class="card-emoji">🐢</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="species-name">Leatherback</div>
+                    <div class="species-latin">Dermochelys coriacea</div>
+                  </div>
+                  <span class="status-chip status-vu">Vulnerable</span>
+                </div>
+                <p class="species-desc">The giant of the sea turtle world — the leatherback can weigh up to 900 kg and dive deeper than 1,200 meters. Unlike other sea turtles, it lacks a hard shell, instead bearing a flexible, leathery carapace reinforced by thousands of tiny bone fragments.</p>
+                <div class="stat-row">
+                  <span class="stat-chip">Up to 2.1m long</span>
+                  <span class="stat-chip">Up to 900 kg</span>
+                  <span class="stat-chip">Dives 1,200m</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- GREEN -->
+          <div class="col-md-6 col-lg-4 d-flex">
+            <div class="species-card theme-green">
+              <div class="card-header-img">
+                <div class="card-emoji">🌿</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="species-name">Green Turtle</div>
+                    <div class="species-latin">Chelonia mydas</div>
+                  </div>
+                  <span class="status-chip status-en">Endangered</span>
+                </div>
+                <p class="species-desc">Named not for its shell but for the green fat beneath it — a result of a strictly herbivorous diet of seagrasses and algae. Green turtles play a vital role in maintaining healthy seagrass meadows by grazing them like underwater lawnmowers.</p>
+                <div class="stat-row">
+                  <span class="stat-chip">Up to 1.5m long</span>
+                  <span class="stat-chip">Up to 230 kg</span>
+                  <span class="stat-chip">Herbivore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- HAWKSBILL -->
+          <div class="col-md-6 col-lg-4 d-flex">
+            <div class="species-card theme-hawksbill">
+              <div class="card-header-img">
+                <div class="card-emoji">🦅</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="species-name">Hawksbill</div>
+                    <div class="species-latin">Eretmochelys imbricata</div>
+                  </div>
+                  <span class="status-chip status-cr">Critically Endangered</span>
+                </div>
+                <p class="species-desc">Recognized by its narrow, pointed beak — perfect for extracting sponges from reef crevices. Hawksbills are crucial reef-health managers; by controlling sponge populations they allow corals to thrive. Their striking shell was historically used for "tortoiseshell" jewelry.</p>
+                <div class="stat-row">
+                  <span class="stat-chip">Up to 1.0m long</span>
+                  <span class="stat-chip">Up to 80 kg</span>
+                  <span class="stat-chip">Reef specialist</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- LOGGERHEAD -->
+          <div class="col-md-6 col-lg-4 d-flex">
+            <div class="species-card theme-loggerhead">
+              <div class="card-header-img">
+                <div class="card-emoji">🪸</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="species-name">Loggerhead</div>
+                    <div class="species-latin">Caretta caretta</div>
+                  </div>
+                  <span class="status-chip status-vu">Vulnerable</span>
+                </div>
+                <p class="species-desc">Famous for their enormous, powerful heads and jaws, loggerheads crush hard-shelled prey like conchs and horseshoe crabs. They are one of the most widespread sea turtle species, nesting across the Mediterranean, Atlantic, and Pacific.</p>
+                <div class="stat-row">
+                  <span class="stat-chip">Up to 1.2m long</span>
+                  <span class="stat-chip">Up to 200 kg</span>
+                  <span class="stat-chip">Carnivore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- OLIVE RIDLEY -->
+          <div class="col-md-6 col-lg-4 d-flex">
+            <div class="species-card theme-ridley">
+              <div class="card-header-img">
+                <div class="card-emoji">🏝️</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="species-name">Olive Ridley</div>
+                    <div class="species-latin">Lepidochelys olivacea</div>
+                  </div>
+                  <span class="status-chip status-vu">Vulnerable</span>
+                </div>
+                <p class="species-desc">The most abundant sea turtle species — and the most social. Each year tens of thousands of females come ashore simultaneously in a phenomenon called an "arribada," carpeting beaches in a breathtaking spectacle of mass nesting behavior.</p>
+                <div class="stat-row">
+                  <span class="stat-chip">Up to 0.75m long</span>
+                  <span class="stat-chip">Up to 50 kg</span>
+                  <span class="stat-chip">Arribada nester</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- FLATBACK -->
+          <div class="col-md-6 col-lg-4 d-flex">
+            <div class="species-card theme-flatback">
+              <div class="card-header-img">
+                <div class="card-emoji">🌺</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="species-name">Flatback</div>
+                    <div class="species-latin">Natator depressus</div>
+                  </div>
+                  <span class="status-chip status-lc">Data Deficient</span>
+                </div>
+                <p class="species-desc">Endemic to Australia's coastal waters, the flatback is the only sea turtle species found nowhere else on Earth. Its notably flat, upturned shell edges are an adaptation to shallow-water continental shelf habitats where it hunts soft corals and sea cucumbers.</p>
+                <div class="stat-row">
+                  <span class="stat-chip">Up to 1.0m long</span>
+                  <span class="stat-chip">Up to 90 kg</span>
+                  <span class="stat-chip">Australia only</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+        </div>
+      </div>
+    </section>
+ 
+    <!-- COMPARISON TABLE -->
+    <section class="compare-section">
+      <div class="container">
+        <h2>At a Glance</h2>
+        <p>Quick reference comparison across all seven species.</p>
+        <div style="overflow-x:auto;">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Species</th>
+                <th>Max Weight</th>
+                <th>Max Length</th>
+                <th>Primary Diet</th>
+                <th>IUCN Status</th>
+                <th>Nesting Region</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Leatherback</td><td>900 kg</td><td>2.1 m</td><td>Jellyfish</td><td><span class="status-chip status-vu">Vulnerable</span></td><td>Tropics & sub-tropics</td></tr>
+              <tr><td>Green Turtle</td><td>230 kg</td><td>1.5 m</td><td>Seagrass, algae</td><td><span class="status-chip status-en">Endangered</span></td><td>Tropical coasts worldwide</td></tr>
+              <tr><td>Hawksbill</td><td>80 kg</td><td>1.0 m</td><td>Sponges</td><td><span class="status-chip status-cr">Critically Endangered</span></td><td>Tropical reefs</td></tr>
+              <tr><td>Loggerhead</td><td>200 kg</td><td>1.2 m</td><td>Crustaceans</td><td><span class="status-chip status-vu">Vulnerable</span></td><td>Atlantic, Mediterranean</td></tr>
+              <tr><td>Olive Ridley</td><td>50 kg</td><td>0.75 m</td><td>Mixed</td><td><span class="status-chip status-vu">Vulnerable</span></td><td>Tropical Pacific & Indian</td></tr>
+              <tr><td>Kemp's Ridley</td><td>45 kg</td><td>0.70 m</td><td>Crabs</td><td><span class="status-chip status-cr">Critically Endangered</span></td><td>Gulf of Mexico</td></tr>
+              <tr><td>Flatback</td><td>90 kg</td><td>1.0 m</td><td>Soft invertebrates</td><td><span class="status-chip status-lc">Data Deficient</span></td><td>Northern Australia</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+ 
+  <footer>
+    <div class="container">
+      <p>🐢 TurtleWorld &nbsp;·&nbsp; <a href="index.html">Home</a> &nbsp;·&nbsp; <a href="species.html">Species</a> &nbsp;·&nbsp; <a href="conservation.html">Conservation</a></p>
+    </div>
+  </footer>
+ 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
